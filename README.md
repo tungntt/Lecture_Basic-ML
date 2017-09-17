@@ -1,3 +1,4 @@
 # Lecture_Basic-ML
 
- - Lesson 2: Linear Regresson
+ - Lesson 3: Linear Regresson
+ - Lesson 9: Perceptron Learning Algorithm
