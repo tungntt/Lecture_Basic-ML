@@ -1,0 +1,62 @@
+GET  _cat/indices?v
+GET _all
+
+GET _search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
+
+POST twitter_search/tweet/_search
+
+# Step 1: clone new index
+POST _reindex
+{
+  "source": {
+    "index": "twitter"
+  },
+  "dest": {
+    "index": "twitter_test"
+  }
+}
+
+
+
+POST twitter_search/tweet/_update_by_query
+{
+  "script": {
+    "inline": "ctx._source.user_search = /\\'|\\s+/.matcher(ctx._source.user_search).replaceAll(' ')"
+  }
+}
+
+# Step 2: add new field in created index
+PUT twitter_test/_mapping/tweet
+{
+  "properties": {
+    "user_search": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    }
+  }
+}
+
+# Step 3: copy data, replace single quote and white space
+POST twitter_test/tweet/_update_by_query
+{
+  "query": {
+    "match_all": {}
+  },
+  "script": {
+    "inline": "ctx._source.user_search = /\\'|\\s+/.matcher(ctx._source.user).replaceAll('')"
+  }
+}
+
+GET twitter_test/tweet/_search
+
